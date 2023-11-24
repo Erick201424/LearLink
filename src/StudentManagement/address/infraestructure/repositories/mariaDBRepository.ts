@@ -3,96 +3,56 @@ import { Address } from "../../domain/entities/address";
 import { AddressRespository } from "../../domain/repositories/addressRepository";
 
 export class MariaDBRepository implements AddressRespository {
-    async createAddress(
-        mainStreet: string,
-        street1: string,
-        street2: string,
-        zipCode: number,
-        state: string,
-        country: string,
-        status: string
-    ): Promise<Address | null> {
-        try {
-            const sql =
-                "INSERT INTO address (mainStreet, street1, street2, zipCode, state, country, status) VALUES (?,?,?,?,?,?,?)";
-            const params: any[] = [mainStreet, street1, street2, zipCode, state, country, status];
-            const result = await query(sql, params);
 
-            if (result && result.insertId) {
-                const createdAddress = new Address(
-                    result.insertId,
-                    mainStreet,
-                    street1,
-                    street2,
-                    zipCode,
-                    state,
-                    country,
-                    status
-                );
-                return createdAddress;
-            } else {
-                throw new Error(
-                    "Failed to create the category. No valid result obtained from the database."
-                );
-            }
+    async createAddress(state: string, municipality: string, zipCode: string, mainStreet: string, street1: string, street2: string): Promise<any> {
+        try {
+            const sql = "INSERT INTO address (state, municipality, zipCode, mainStreet, street1, street2) VALUES (?,?,?,?,?,?)";
+            const params: any[] = [state, municipality, zipCode, mainStreet, street1, street2];
+            const result: any = await query(sql, params);
+
+            return new Address(result.insertId, state, municipality, zipCode, mainStreet, street1, street2);
         } catch (error) {
             console.error("Error: ", error);
-            throw new Error("Failed to create the address. Please try again later.");
+            throw new Error("Failed to create the user. Please try again later.");
         }
     }
 
-    async updateAddress(
-        id: number,
-        mainStreet: string,
-        street1: string,
-        street2: string,
-        zipCode: number,
-        state: string,
-        country: string,
-        status: string
-    ): Promise<Address | null> {
-        try {
-            const sql = "UPDATE address SET mainStreet = ?, street1  = ?, street2 = ?, zipCode = ?, state = ?, country = ?, status = ? WHERE id = ?";
-            const params: any[] = [mainStreet, street1, street2, zipCode, state, country, status, id];
-            const result = await query(sql, params);
+    //     async getAddressById(id: number): Promise<Address | null> {
+    //         const sql = "SELECT * FROM address WHERE id = ?";
 
-            if (result && result.affectedRows > 0) {
-                const updatedAddress = new Address(id, mainStreet, street1, street2, zipCode, state, country, status);
-                return updatedAddress;
-            } else {
-                return null;
-            }
-        } catch (error) {
-            console.error("Error al actualizar la dirección:", error);
-            return null;
-        }
-    }
+    //         try {
+    //             const result = await query(sql, [id]);
 
-    async getAddressById(
-        id: number
-    ): Promise<Address | null> {
-        const sql = "SELECT * FROM address WHERE id = ?";
-        try {
-            const result = await query(sql, [id]);
-            if (result.length === 0) {
-                return null; // Si no hay resultados, se devuelve null
-            }
-            const address = result[0]; // Suponiendo que solo se espera un resultado
+    //             if (result && result.length > 0) {
+    //                 const addressData = result[0];
+    //                 const address = new Address(
+    //                     addressData.id,
+    //                     addressData.state,
+    //                     addressData.municipality,
+    //                     addressData.zipCode,
+    //                     addressData.mainStreet,
+    //                     addressData.street1,
+    //                     addressData.street2
+    //                 );
 
-            return new Address(
-                address.id,
-                address.mainStreet,
-                address.street1,
-                address.street2,
-                address.zipCode,
-                address.state,
-                address.country,
-                address.status
-            );
-        } catch (error) {
-            console.error("Error al obtener la dirección:", error);
-            return null;
-        }
-    }
+    //                 return address;
+    //             } else {
+    //                 return null; // No se encontró ninguna dirección con el ID dado
+    //             }
+
+    //         } catch (error) {
+    //             console.error("Error fetching address by ID:", error);
+    //             return null;
+    //         }
+    //     }
+
+    //     async createAddress(address: Address): Promise<Address | null> {
+    //         let sql = "INSERT INTO address(state, municipality, zipCode, mainStreet, street1, street2) values(?,?,?,?,?,?)";
+    //         const params: any[] = [address.state, address.municipality, address.zipCode, address.mainStreet, address.street1, address.street2];
+    //         const result: any = await query(sql, params);
+
+    //         address.id = result.insertId;
+    //         return address;
+    //     }
 
 }
